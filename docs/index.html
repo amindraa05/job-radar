@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Job Radar — infrastructure roles, scored against one CV</title>
+<meta name="description" content="Aggregates infrastructure and SRE postings from 87 company job boards and four remote aggregators, scores each against a fixed candidate profile, and refreshes daily.">
+<link rel="stylesheet" href="assets/style.css?v=1">
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap top-in">
+    <span class="brand"><span class="dot"></span>Job Radar</span>
+    <span class="spacer"></span>
+    <button class="iconbtn theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme"></button>
+  </div>
+</header>
+
+<div class="wrap">
+  <h1>Infrastructure roles, scored against one CV</h1>
+  <p class="lede">Every posting below came from a public company job board or a remote-work API, was
+  de-duplicated, then scored against a fixed profile: about two and a half years of experience,
+  based in Indonesia, strongest on AWS, VMware, Linux, Windows Server with Active Directory and DNS,
+  Prometheus and Grafana, and SQL Server high availability.</p>
+  <p class="meta">Last refreshed <strong id="gen">—</strong> (<span id="age">—</span>) &middot;
+  <span id="boards">—</span> boards polled &middot; <span id="failures">—</span> failed this run &middot;
+  applied and hidden marks stay in this browser and are never uploaded</p>
+
+  <div class="stats">
+    <div class="stat"><div class="k">Scanned this run</div><div class="v" id="n-scanned">—</div></div>
+    <div class="stat acc"><div class="k">Passed the filter</div><div class="v" id="n-total">—</div></div>
+    <div class="stat good"><div class="k">Strong fit</div><div class="v" id="n-strong">—</div></div>
+    <div class="stat"><div class="k">Indonesia / APAC</div><div class="v" id="n-apac">—</div></div>
+    <div class="stat"><div class="k">Marked applied</div><div class="v" id="applied">0</div></div>
+    <div class="stat"><div class="k">Ruled out</div><div class="v" id="hidden-n">0</div></div>
+  </div>
+
+  <div class="controls">
+    <div class="ctl-row">
+      <span class="search"><input type="search" id="q" placeholder="Search title, company, location or skill" aria-label="Search"></span>
+      <select data-filter="band" aria-label="Filter by fit">
+        <option value="all">Any fit</option>
+        <option value="strong">Strong only</option>
+        <option value="worth a look">Worth a look</option>
+        <option value="stretch">Stretch</option>
+      </select>
+      <select data-filter="geo" aria-label="Filter by region">
+        <option value="all">Any region</option>
+        <option value="apac">Indonesia / APAC</option>
+        <option value="worldwide">Open worldwide</option>
+        <option value="remote-unspecified">Remote, unstated</option>
+        <option value="elsewhere">Needs relocation</option>
+      </select>
+      <select data-filter="sen" aria-label="Filter by seniority">
+        <option value="all">Any level</option>
+        <option value="junior">Junior</option>
+        <option value="mid">Mid</option>
+        <option value="senior">Senior</option>
+        <option value="staff">Staff</option>
+      </select>
+      <select id="sort" aria-label="Sort">
+        <option value="score">Best fit first</option>
+        <option value="date">Newest first</option>
+      </select>
+      <button class="chip" id="hide" aria-pressed="true">Hiding handled</button>
+      <button class="chip" id="export">Export applied</button>
+      <button class="chip" id="reset">Clear marks</button>
+      <span class="count" id="count">—</span>
+    </div>
+  </div>
+
+  <div class="list" id="list"></div>
+
+  <details class="acc">
+    <summary>How the score is built, and what it cannot see</summary>
+    <div class="body">
+      <p><strong>Role is a gate, not a bonus.</strong> A marketing posting that mentions AWS is still a
+      marketing posting. Titles are classified first, and anything that is not an infrastructure role
+      scores zero regardless of its content. A block list removes the near misses: physical security
+      systems, pre-sales solution architects, QA and mobile roles that share vocabulary with infrastructure.</p>
+      <p><strong>Seniority is penalised honestly.</strong> The profile is worth about two and a half
+      years. Senior, staff, principal and management titles carry large negative weights rather than
+      being hidden, because occasionally one is worth a speculative application.</p>
+      <p><strong>Geography is the sharpest filter.</strong> Many roles advertised as remote are restricted
+      to one country. Those are detected and pushed to the bottom with the restriction named. Roles
+      requiring relocation are kept but marked, since they need a visa.</p>
+      <p><strong>What it cannot see:</strong> salary in most cases, whether the posting is still open,
+      whether the company sponsors visas, and anything on LinkedIn, Indeed, Glassdoor, Jobstreet,
+      Glints or Kalibrr. None of those publish an API, and scraping them would breach their terms.
+      Indonesian coverage is therefore thin and comes mostly from global companies hiring in Jakarta
+      or Singapore. Treat this as one input, not the whole market.</p>
+      <p><strong>Scoring is a heuristic, not a judgement.</strong> Every row shows the reasons behind
+      its number so you can disagree with it. Green tags are skills the CV supports; amber tags with a
+      question mark are technologies in the posting that the CV does not currently claim.</p>
+    </div>
+  </details>
+
+  <footer>
+    <p>Built as an engineering exercise: scheduled ingestion from 87 public job boards and four remote-work
+    APIs, de-duplication, rule-based scoring, and a static dashboard refreshed by GitHub Actions. Source
+    and method are in the repository. Postings belong to their respective employers; this page links to
+    them and stores nothing about you.</p>
+  </footer>
+</div>
+
+<script src="assets/app.js?v=1"></script>
+</body>
+</html>

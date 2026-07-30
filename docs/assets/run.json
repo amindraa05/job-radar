@@ -1,0 +1,24 @@
+{
+ "generated": "2026-07-30T23:08:33Z",
+ "seconds": 28.6,
+ "boards_probed": 87,
+ "raw": 12047,
+ "deduped": 9974,
+ "bands": {
+  "out": 9787,
+  "worth a look": 61,
+  "stretch": 102,
+  "strong": 24
+ },
+ "written": 187,
+ "per_source": {
+  "ashby": 2077,
+  "greenhouse": 8053,
+  "lever": 1347,
+  "remotive": 35,
+  "remoteok": 100,
+  "arbeitnow": 375,
+  "himalayas": 60
+ },
+ "failures": []
+}
