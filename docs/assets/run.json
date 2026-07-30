@@ -1,16 +1,16 @@
 {
- "generated": "2026-07-30T23:08:33Z",
- "seconds": 28.6,
+ "generated": "2026-07-30T23:14:44Z",
+ "seconds": 11.6,
  "boards_probed": 87,
  "raw": 12047,
  "deduped": 9974,
  "bands": {
-  "out": 9787,
+  "out": 9786,
   "worth a look": 61,
   "stretch": 102,
-  "strong": 24
+  "strong": 25
  },
- "written": 187,
+ "written": 188,
  "per_source": {
   "ashby": 2077,
   "greenhouse": 8053,
