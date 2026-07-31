@@ -60,6 +60,22 @@ railway ramp replit render resend runwayml scale sourcegraph supabase
 temporal together tremor vanta vercel warp weights zed
 """
 
+# Indonesian and Southeast Asian employers. Greenhouse and Lever barely cover
+# this region; SmartRecruiters and Workable carry far more of it.
+SMARTRECRUITERS = """
+grab deliveryhero alodokter sayurbox julo bosch sap visa avery
+publicissapient ubisoft biocatch mcdonalds ikea
+"""
+
+RECRUITEE = """
+tiket lummo pintu evermos ula catalyst
+"""
+
+WORKABLE = """
+amartha ajaib flip halodoc kitabisa investree modalku efishery
+kredivo akulaku bareksa zenius cakap waresix sicepat
+"""
+
 REGION_HINTS = ("indonesia", "jakarta", "singapore", "malaysia", "vietnam",
                 "thailand", "philippines", "apac", "asia", "bangalore", "india",
                 "tokyo", "sydney", "hong kong")
@@ -80,6 +96,18 @@ def probe(spec):
     kind, slug = spec
     if kind == "greenhouse":
         url = f"https://boards-api.greenhouse.io/v1/boards/{slug}/jobs"
+        data, err = fetch(url)
+        jobs = (data or {}).get("jobs", []) if data else []
+    elif kind == "smartrecruiters":
+        url = f"https://api.smartrecruiters.com/v1/companies/{slug}/postings?limit=100"
+        data, err = fetch(url)
+        jobs = (data or {}).get("content", []) if data else []
+    elif kind == "recruitee":
+        url = f"https://{slug}.recruitee.com/api/offers/"
+        data, err = fetch(url)
+        jobs = (data or {}).get("offers", []) if data else []
+    elif kind == "workable":
+        url = f"https://apply.workable.com/api/v1/widget/accounts/{slug}?details=true"
         data, err = fetch(url)
         jobs = (data or {}).get("jobs", []) if data else []
     elif kind == "lever":
@@ -107,7 +135,10 @@ def probe(spec):
 def main() -> int:
     specs = ([("greenhouse", s) for s in GREENHOUSE.split()]
              + [("lever", s) for s in LEVER.split()]
-             + [("ashby", s) for s in ASHBY.split()])
+             + [("ashby", s) for s in ASHBY.split()]
+             + [("smartrecruiters", s) for s in SMARTRECRUITERS.split()]
+             + [("recruitee", s) for s in RECRUITEE.split()]
+             + [("workable", s) for s in WORKABLE.split()])
     print(f"Probing {len(specs)} candidate boards...\n")
 
     with ThreadPoolExecutor(max_workers=12) as pool:

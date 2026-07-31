@@ -52,8 +52,13 @@ def main() -> int:
         rows, err = fn(b["slug"])
         return b, rows, err
 
-    with ThreadPoolExecutor(max_workers=10) as pool:
-        futures = [pool.submit(pull_board, b) for b in boards]
+    # Workable rate-limits concurrent callers, so it is pulled serially while
+    # everything else runs in parallel.
+    serial = [b for b in boards if b["kind"] == "workable"]
+    parallel = [b for b in boards if b["kind"] != "workable"]
+
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        futures = [pool.submit(pull_board, b) for b in parallel]
         for fut in as_completed(futures):
             b, rows, err = fut.result()
             if err:
@@ -61,6 +66,15 @@ def main() -> int:
                 continue
             raw.extend(rows)
             per_source[b["kind"]] = per_source.get(b["kind"], 0) + len(rows)
+
+    for b in serial:
+        _, rows, err = pull_board(b)
+        if err:
+            failures.append({"source": f"{b['kind']}/{b['slug']}", "error": err})
+            continue
+        raw.extend(rows)
+        per_source[b["kind"]] = per_source.get(b["kind"], 0) + len(rows)
+        time.sleep(1.2)
 
     for name, fn in fetch.AGGREGATORS.items():
         rows, err = fn()

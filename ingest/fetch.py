@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import re
 import ssl
+import time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -33,16 +34,33 @@ def strip_html(s: str | None) -> str:
     return _WS.sub(" ", unescape(_TAG.sub(" ", s))).strip()
 
 
-def get_json(url: str, timeout: int = TIMEOUT):
-    """Return (data, error). Never raises."""
-    try:
-        req = urllib.request.Request(url, headers=UA)
-        with urllib.request.urlopen(req, timeout=timeout) as r:
-            return json.loads(r.read()), None
-    except urllib.error.HTTPError as e:
-        return None, f"HTTP {e.code}"
-    except Exception as e:  # noqa: BLE001
-        return None, f"{type(e).__name__}: {str(e)[:60]}"
+def get_json(url: str, timeout: int = TIMEOUT, retries: int = 3):
+    """Return (data, error). Never raises.
+
+    Retries on 429 and 5xx with backoff. Workable in particular rate-limits
+    concurrent callers, and losing a 500-posting board to one 429 is the
+    difference between covering an employer and not.
+    """
+    delay = 1.5
+    for attempt in range(retries):
+        try:
+            req = urllib.request.Request(url, headers=UA)
+            with urllib.request.urlopen(req, timeout=timeout) as r:
+                return json.loads(r.read()), None
+        except urllib.error.HTTPError as e:
+            if e.code in (429, 500, 502, 503, 504) and attempt < retries - 1:
+                wait = float(e.headers.get("Retry-After") or 0) or delay
+                time.sleep(min(wait, 20))
+                delay *= 2
+                continue
+            return None, f"HTTP {e.code}"
+        except Exception as e:  # noqa: BLE001
+            if attempt < retries - 1:
+                time.sleep(delay)
+                delay *= 2
+                continue
+            return None, f"{type(e).__name__}: {str(e)[:60]}"
+    return None, "retries exhausted"
 
 
 # --------------------------------------------------------------------------
@@ -106,6 +124,83 @@ def ashby(slug: str):
             "posted_at": j.get("publishedAt", ""),
             "text": strip_html(j.get("descriptionPlain") or j.get("descriptionHtml"))[:6000],
             "external_id": str(j.get("id", "")),
+        })
+    return out, None
+
+
+def smartrecruiters(slug: str):
+    """SmartRecruiters paginates; totalFound is often several times the page size."""
+    out, offset = [], 0
+    while offset < 400:
+        url = (f"https://api.smartrecruiters.com/v1/companies/{slug}/postings"
+               f"?limit=100&offset={offset}")
+        d, err = get_json(url)
+        if err:
+            return (out, None) if out else ([], err)
+        rows = (d or {}).get("content", [])
+        if not rows:
+            break
+        for j in rows:
+            loc = j.get("location") or {}
+            city = ", ".join(x for x in (loc.get("city"), loc.get("country")) if x)
+            out.append({
+                "source": "smartrecruiters",
+                "company": slug,
+                "title": j.get("name", ""),
+                "url": (j.get("ref") or "").replace("api.smartrecruiters.com/v1/companies",
+                                                    "jobs.smartrecruiters.com")
+                       or f"https://jobs.smartrecruiters.com/{slug}/{j.get('id','')}",
+                "location": city or ("Remote" if loc.get("remote") else ""),
+                "posted_at": str(j.get("releasedDate", ""))[:10],
+                "text": " ".join(filter(None, [
+                    j.get("name", ""),
+                    (j.get("department") or {}).get("label", ""),
+                    (j.get("function") or {}).get("label", ""),
+                    (j.get("industry") or {}).get("label", ""),
+                    (j.get("experienceLevel") or {}).get("label", ""),
+                ])),
+                "external_id": str(j.get("id", "")),
+            })
+        if len(rows) < 100:
+            break
+        offset += 100
+    return out, None
+
+
+def recruitee(slug: str):
+    d, err = get_json(f"https://{slug}.recruitee.com/api/offers/")
+    if err:
+        return [], err
+    out = []
+    for j in (d or {}).get("offers", []):
+        out.append({
+            "source": "recruitee",
+            "company": slug,
+            "title": j.get("title", ""),
+            "url": j.get("careers_url", "") or j.get("url", ""),
+            "location": ", ".join(filter(None, [j.get("city"), j.get("country")])) or "",
+            "posted_at": str(j.get("published_at", ""))[:10],
+            "text": strip_html(j.get("description"))[:6000],
+            "external_id": str(j.get("id", "")),
+        })
+    return out, None
+
+
+def workable(slug: str):
+    d, err = get_json(f"https://apply.workable.com/api/v1/widget/accounts/{slug}?details=true")
+    if err:
+        return [], err
+    out = []
+    for j in (d or {}).get("jobs", []):
+        out.append({
+            "source": "workable",
+            "company": slug,
+            "title": j.get("title", ""),
+            "url": j.get("url", "") or j.get("shortlink", ""),
+            "location": ", ".join(filter(None, [j.get("city"), j.get("country")])) or "",
+            "posted_at": str(j.get("published_on", ""))[:10],
+            "text": strip_html(j.get("description"))[:6000],
+            "external_id": str(j.get("shortcode", "")),
         })
     return out, None
 
@@ -210,4 +305,6 @@ AGGREGATORS = {
     "himalayas": himalayas,
 }
 
-ATS = {"greenhouse": greenhouse, "lever": lever, "ashby": ashby}
+ATS = {"greenhouse": greenhouse, "lever": lever, "ashby": ashby,
+       "smartrecruiters": smartrecruiters, "recruitee": recruitee,
+       "workable": workable}

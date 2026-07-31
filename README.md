@@ -1,6 +1,6 @@
 # Job Radar
 
-*Scheduled ingestion from 87 public company job boards and four remote-work APIs, de-duplicated, scored against a fixed candidate profile, and published as a static dashboard that refreshes itself daily.*
+*Scheduled ingestion from 96 public company job boards across six ATS platforms and four remote-work APIs, de-duplicated, scored against a fixed candidate profile, and published as a static dashboard that refreshes itself daily.*
 
 **🔗 [Live board](https://amindraa05.github.io/job-radar/)**
 
@@ -8,24 +8,29 @@
 
 ## What it does
 
-Roughly 12,000 postings are pulled on every run. About 9,900 survive de-duplication. Under 200 pass the relevance filter. That reduction is the product: a list of ten thousand jobs is noise, and the value lies in discarding most of them for a reason you can read.
+Roughly 13,300 postings are pulled on every run. About 11,100 survive de-duplication. Under 200 pass the relevance filter. That reduction is the product: a list of ten thousand jobs is noise, and the value lies in discarding most of them for a reason you can read.
 
 Each surviving posting carries its score, the reasons behind it, the skills it matches, and the technologies it asks for that the profile does not claim.
 
 | Stage | Typical volume |
 |---|---|
-| Fetched from all sources | ~12,000 |
-| After de-duplication | ~9,900 |
+| Fetched from all sources | ~13,300 |
+| After de-duplication | ~11,100 |
 | Passed the relevance gate | ~190 |
-| Scored *strong* | ~25 |
+| Scored *strong* | ~26 |
+| Advertised in Indonesia | ~6 |
 
 ## Sources
 
-**Applicant tracking systems**, one public board per company: Greenhouse, Lever, Ashby. The board list in [`ingest/boards.json`](ingest/boards.json) is not hand-written. [`discover.py`](ingest/discover.py) probes a wide candidate list, keeps whatever answers, and records how many postings each board carries in the regions that matter. Of 201 candidates probed, 87 responded.
+**Applicant tracking systems**, one public board per company: Greenhouse, Lever, Ashby, SmartRecruiters, Recruitee and Workable. The board list in [`ingest/boards.json`](ingest/boards.json) is not hand-written. [`discover.py`](ingest/discover.py) probes a wide candidate list, keeps whatever answers, and records how many postings each board carries in the regions that matter. Of 236 candidates probed, 96 responded.
+
+Adding SmartRecruiters and Workable was the single largest improvement to Indonesian coverage. Greenhouse and Lever barely reach the region: Gojek, Tokopedia, Traveloka and Grab all return 404 there. Grab publishes 330 postings through SmartRecruiters, and Ajaib and Amartha through Workable, which is where the Jakarta infrastructure roles actually appear.
 
 **Remote-work aggregators**: Remotive, RemoteOK, Arbeitnow, Himalayas.
 
-**Not used, deliberately.** LinkedIn, Indeed, Glassdoor, Jobstreet, Glints and Kalibrr publish no API, and scraping them would breach their terms. Indonesian coverage is therefore thin and arrives mostly through global companies hiring into Jakarta or Singapore. The dashboard says so on its face rather than implying completeness.
+**Not used, deliberately.** LinkedIn, Indeed and Glassdoor publish no usable API. Jobstreet is more explicit than most: its `robots.txt` disallows `/api/jobsearch/`, `/graphql`, `*/job/` and every URL carrying a query string for all user agents, and names AI crawlers individually. That is a machine-readable instruction from the site owner, not an obstacle to route around. Glints and Kalibrr are similar.
+
+Indonesian coverage is therefore partial and comes from employers who publish through a consumable API. The dashboard states this rather than implying completeness.
 
 ## Scoring
 
