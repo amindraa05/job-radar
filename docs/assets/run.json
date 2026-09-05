@@ -1,23 +1,23 @@
 {
- "generated": "2026-09-04T00:49:38Z",
- "seconds": 28.7,
+ "generated": "2026-09-05T00:38:40Z",
+ "seconds": 16.4,
  "boards_probed": 95,
- "raw": 13940,
- "deduped": 11594,
+ "raw": 13997,
+ "deduped": 11634,
  "bands": {
-  "out": 11386,
-  "worth a look": 56,
-  "stretch": 112,
-  "strong": 40
+  "out": 11424,
+  "stretch": 109,
+  "strong": 39,
+  "worth a look": 62
  },
- "written": 208,
+ "written": 210,
  "per_source": {
-  "ashby": 2266,
-  "greenhouse": 8173,
-  "lever": 1538,
+  "greenhouse": 8215,
+  "ashby": 2280,
+  "lever": 1526,
   "smartrecruiters": 811,
-  "workable": 525,
-  "remotive": 17,
+  "workable": 537,
+  "remotive": 18,
   "remoteok": 100,
   "arbeitnow": 450,
   "himalayas": 60
