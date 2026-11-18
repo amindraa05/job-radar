@@ -1,26 +1,31 @@
 {
- "generated": "2026-11-17T04:57:51Z",
- "seconds": 15.8,
+ "generated": "2026-11-18T04:02:04Z",
+ "seconds": 17.6,
  "boards_probed": 90,
- "raw": 14592,
- "deduped": 12076,
+ "raw": 14598,
+ "deduped": 12057,
  "bands": {
-  "out": 11833,
-  "worth a look": 75,
-  "stretch": 119,
-  "strong": 49
+  "out": 11817,
+  "worth a look": 77,
+  "stretch": 115,
+  "strong": 48
  },
- "written": 243,
+ "written": 240,
  "per_source": {
-  "ashby": 2279,
-  "greenhouse": 8848,
-  "lever": 961,
+  "ashby": 2286,
+  "greenhouse": 8843,
   "smartrecruiters": 811,
-  "workable": 619,
-  "remotive": 17,
+  "lever": 964,
+  "workable": 621,
+  "remotive": 16,
   "remoteok": 97,
   "arbeitnow": 900,
   "himalayas": 60
  },
- "failures": []
+ "failures": [
+  {
+   "source": "ashby/browserbase",
+   "error": "HTTP 404"
+  }
+ ]
 }
